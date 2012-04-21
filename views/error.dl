@@ -1,0 +1,7 @@
+!!! 5
+html
+	head
+		title VibeNotes - Error #{code}
+	body
+		h1 Error #{code}
+		p= msg

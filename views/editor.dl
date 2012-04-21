@@ -1,0 +1,14 @@
+!!! 5
+html(lang="en")
+	head
+		link(rel="stylesheet", type="text/css", href="#{req.rootDir}style.css")
+		script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
+		script(type="text/javascript", src="#{req.rootDir}scripts/diff_match_patch.js")
+		script(type="text/javascript", src="#{req.rootDir}scripts/editor.js")
+		title VibeNotes
+	body(onLoad="setupEditor()")
+		h1 Editor:
+		#edit(contenteditable="true")!= "Welcome to VibeNotes!<br><br>Start entering text here!"
+		#test
+		#cursors
+		pre#log

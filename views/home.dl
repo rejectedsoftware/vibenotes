@@ -1,0 +1,15 @@
+!!! 5
+html(lang="en")
+	head
+		link(rel="stylesheet", type="text/css", href="style.css")
+		title VibeNotes
+	body
+		h1 Welome to VibeNotes!
+		a(href="/login") Login
+		dl
+			-if (req.session)
+				div=req.session["username"]
+				div=req.session["password"]
+		form(method="GET", action="/")
+			p Create/Open Note Pad:
+			input(name="name", type="text")
