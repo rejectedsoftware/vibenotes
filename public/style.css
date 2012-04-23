@@ -10,16 +10,6 @@ h1 {
 	overflow: auto;
 }
 
-#test {
-	position: absolute;
-	left: 50%;
-	width: 40%;
-	height: 20em;
-	background-color: #eee;
-	border: 1px solid green;
-	overflow: auto;
-}
-
 #log {
 	position: absolute;
 	top: 30em;

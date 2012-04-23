@@ -56,27 +56,39 @@ function updateRemoteCursors()
 
 function onServerMessageReceived(json)
 {
-	var commands = JSON.parse(json);
-	
-	var edit = $('#edit');
+	var log;
+	var commands;
+	try {
+	 	commands = JSON.parse(json);
+	} catch(e) {
 
-	/*if( commands.applyPatch ){
-		var cur = getCursorPos();
-		var curstartpath = getPath(edit, $(cur.startContainer));
-		var curendpath = getPath(edit, $(cur.endContainer));
+		console.log("invalid json", json);
+		return;
+	}
+	var edit = $('#edit');
+	var cur = getCursorPos();
+
+	if( commands.applyPatch ){
+		if( cur ) {
+			var curstartpath = getPath(edit, $(cur.startContainer));
+			var curendpath = getPath(edit, $(cur.endContainer));
+		}
 		var dmp = new diff_match_patch();
 		var newcont = edit.html();
-		console.log(newcont);
+		//console.log(newcont);
 		newcont = dmp.patch_apply(dmp.patch_fromText(commands.applyPatch), newcont);
 		newcont = newcont[0];
 		edit.html(newcont);
-		cur.endContainer = resolvePath(edit, curpath);
-		cur.startContainer = resolvePath(edit, curpath);
-		setCursorPos(cur);
-	}*/
+		if( cur ) {
+			cur.endContainer = resolvePath(edit, curendpath);
+			cur.startContainer = resolvePath(edit, curendpath);
+			console.log("cur", cur);
+			setCursorPos(cur);
 
-	if( commands.updateCursor ){
-		var cur = getCursorPos();
+		}
+	}
+
+	if( commands.updateCursor && cur ){
 		var curid = commands.updateCursor.id;
 		var curpath = commands.updateCursor.path;
 		var curstartpath = getPath(edit, $(cur.startContainer));
@@ -142,25 +154,28 @@ function checkForChanges()
 	// Compute current cursor position
 	//
 	var sel = getCursorPos();
-	var path = $(sel.startContainer);
+	var pathstr;
+	if( sel ) {
+		var path = $(sel.startContainer);
 	
-	var pathstr = [sel.startOffset];
-	while( path.parent().length > 0 ){
-		var par = path.parent();
-		if( par.find("#edit").length ) break;
-		pathstr.push(par.contentsNoCursors().index(path));
-		path = par;
-	}
-	pathstr = pathstr.reverse();
+		pathstr = [sel.startOffset];
+		while( path.parent().length > 0 ){
+			var par = path.parent();
+			if( par.find("#edit").length ) break;
+			pathstr.push(par.contentsNoCursors().index(path));
+			path = par;
+		}
+		pathstr = pathstr.reverse();
 	
-	if( ""+pathstr != ""+lastSyncedCursor ){
-		cursorChanged = true;
-		lastSyncedCursor = pathstr;
-	}
+		if( ""+pathstr != ""+lastSyncedCursor ){
+			cursorChanged = true;
+			lastSyncedCursor = pathstr;
+		}
 			
-	var log = "";
-	log += "SEL: " + sel.startContainer + " " + sel.startOffset + "\n";
-	log += pathstr + "\n";
+		var log = "";
+		log += "SEL: " + sel.startContainer + " " + sel.startOffset + "\n";
+		log += pathstr + "\n";
+	}
 	
 	//
 	// Diff the new contents with the old contents and create a patch
@@ -172,20 +187,22 @@ function checkForChanges()
 	lastSyncedContent = newContent;
 	log += "DIFF: " + patch + "\n";
 	
+
+
+	var obj = {};
+	if( cursorChanged ) obj.updateCursor = {id: "c1", path: pathstr};
+	if( diff.length > 1 ) obj.applyPatch = patch;
+	
 	//
 	// Send changes to server
 	//
 	if( diff.length > 1 || cursorChanged ){
-		var obj = {updateCursor: {id: "c1", path: pathstr}};
-		if( diff.length > 1 ) obj.applyPatch = patch;
 		var json = JSON.stringify(obj);
-		console.log(json);
-		
-		onServerMessageReceived(json);
+		socket.send(json);
 	}
 			
 	
-	$('#log').text(log);
+	//$('#log').text(log);
 }
 
 
@@ -206,6 +223,7 @@ function getCursorPos()
 	var range;
 	if( window.getSelection ){
 		var selObj = window.getSelection();
+		if( selObj.rangeCount == 0 ) return null;
 		range = selObj.getRangeAt(0);
 	} else if( document.selection ){
 		range = document.selection.createRange();
@@ -220,7 +238,6 @@ function getCursorPos()
 
 function setCursorPos(cur)
 {
-console.log(cur);
 	if (window.getSelection) {
 		var sel = document.getSelection();
 		sel.removeAllRanges();
@@ -239,3 +256,25 @@ console.log(cur);
 		document.selection.addRange(range);
 	}
 }
+
+var socket;
+
+function connect() {
+	var href = window.location.href;
+	var url = "ws" + href.substring(4) + "/ws";
+	socket = new WebSocket(url);
+	socket.onopen = function() {
+		console.log("socket opened");
+	}
+	socket.onmessage = function(message) {	
+		onServerMessageReceived(message.data);
+	}
+	socket.onclose = function() {
+		console.log("socket closed");
+		connect();
+	}
+	socket.onerror = function() {
+		console.log("error");
+	}
+}
+connect();

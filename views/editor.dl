@@ -9,6 +9,4 @@ html(lang="en")
 	body(onLoad="setupEditor()")
 		h1 Editor:
 		#edit(contenteditable="true")!= "Welcome to VibeNotes!<br><br>Start entering text here!"
-		#test
 		#cursors
-		pre#log

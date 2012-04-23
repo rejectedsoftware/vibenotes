@@ -1,4 +1,6 @@
-import vibe.vibe;
+import vibe.d;
+import vibe.http.websockets;
+import vibenotes.broadcast;
 
 import std.functional;
 
@@ -36,23 +38,23 @@ void error(HttpServerRequest req, HttpServerResponse res, HttpServerErrorInfo er
 	res.renderCompat!("login.dl", HttpServerErrorInfo, "error")(Variant(error));
 }
 
-int main()
-{
-	setLogLevel(LogLevel.Info);
+
+static this() {
+	setLogLevel(LogLevel.Debug);
 	auto settings = new HttpServerSettings;
 	settings.sessionStore = new MemorySessionStore();
 	settings.port = 8080;
 	settings.errorPageHandler = toDelegate(&error);
 	
+	auto broadcastService = new WebSocketBroadcastService();
+
 	auto router = new UrlRouter;
 	router.get("/", &home);
 	router.get("/login", &logout);
 	router.post("/login", &login);
 	router.get("/n/:name", &editor);
+	router.get("/n/:channel/ws", &broadcastService.handleRequest);
 	router.get("*", serveStaticFiles("./public/"));
-
 	
 	listenHttp(settings, router);
-	
-	return start();
 }
