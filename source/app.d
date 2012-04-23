@@ -1,56 +1,18 @@
 import vibe.vibe;
 
-import std.functional;
-
-void home(HttpServerRequest req, HttpServerResponse res)
-{
-	if( auto pn = "name" in req.query )
-		res.redirect("/n/"~*pn);
-	else
-		res.renderCompat!("home.dl", HttpServerRequest, "req")(Variant(req));
-}
-
-void editor(HttpServerRequest req, HttpServerResponse res)
-{
-	res.renderCompat!("editor.dl", HttpServerRequest, "req")(Variant(req));
-}
-
-void logout(HttpServerRequest req, HttpServerResponse res)
-{
-	if (req.session) {
-		res.terminateSession();
-	} 
-	res.renderCompat!("login.dl")();
-}
-
-void login(HttpServerRequest req, HttpServerResponse res)
-{
-	auto session = res.startSession();
-	session["username"] = req.form["username"];
-	session["password"] = req.form["password"];
-	res.redirect("/");
-}
-
-void error(HttpServerRequest req, HttpServerResponse res, HttpServerErrorInfo error)
-{
-	res.renderCompat!("login.dl", HttpServerErrorInfo, "error")(Variant(error));
-}
+import vibenotes.vibenotes;
 
 int main()
 {
 	setLogLevel(LogLevel.Info);
+	
+	auto router = new UrlRouter;
+	registerVibeNotes(router);
+	
 	auto settings = new HttpServerSettings;
 	settings.sessionStore = new MemorySessionStore();
 	settings.port = 8080;
 	settings.errorPageHandler = toDelegate(&error);
-	
-	auto router = new UrlRouter;
-	router.get("/", &home);
-	router.get("/login", &logout);
-	router.post("/login", &login);
-	router.get("/n/:name", &editor);
-	router.get("*", serveStaticFiles("./public/"));
-
 	
 	listenHttp(settings, router);
 	
