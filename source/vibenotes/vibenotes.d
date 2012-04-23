@@ -1,3 +1,5 @@
+module vibenotes.vibenotes;
+
 import vibe.d;
 
 import std.functional;
