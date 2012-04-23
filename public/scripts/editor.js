@@ -100,6 +100,7 @@ function onServerMessageReceived(json)
 		var dst = edit;
 		var oldContents = edit.html();
 		
+		var log = "";
 		log += "START "+dst.get(0).tagName+"\n";
 		for( var i = 0; i < curpath.length; i++ ){
 			if( dst.get(0) instanceof Text )
