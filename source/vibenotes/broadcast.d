@@ -47,4 +47,12 @@ class WebSocketBroadcastService {
 
 		callback(req, res);
 	}
+	
+	@property string[] channels() const {
+		int[string] chann;
+		foreach(WebSocket k, v; m_channels)
+			if( !(v in chann) )
+				chann[v] = 1;
+		return chann.keys;
+	}		
 }
