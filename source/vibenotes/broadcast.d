@@ -1,5 +1,6 @@
 module vibenotes.broadcast;
 
+import vibe.core.core;
 import vibe.core.log;
 import vibe.http.server;
 import vibe.http.websockets;
@@ -13,7 +14,7 @@ class WebSocketBroadcastService {
 	}
 
 	this() {
-		m_signal = new Signal();
+		m_signal = createSignal();
 	}
 
 	void handleRequest(HttpServerRequest req, HttpServerResponse res) {
@@ -39,7 +40,7 @@ class WebSocketBroadcastService {
 					socket.send(cast(ubyte[])message);
 				}
 				m_queues[socket] = [];
-				yield();
+				rawYield();
 			}
 			m_signal.unregisterSelf();
 			m_queues.remove(socket);
