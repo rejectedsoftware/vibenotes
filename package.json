@@ -8,5 +8,10 @@
 	],
     "version": "0.0.1",
     "dependencies": {
-    }
+    },
+	"repository": {
+		"kind": "github",
+		"owner": "rejectedsoftware",
+		"project": "vibenotes"
+	}
 }
