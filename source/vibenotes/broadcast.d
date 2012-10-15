@@ -25,7 +25,7 @@ class WebSocketBroadcastService {
 		auto callback = handleWebSockets( (socket) {
 			m_queues[socket] = [];
 			m_channels[socket] = channel;
-			m_signal.registerSelf();
+			m_signal.acquire();
 			while( socket.connected ) {
 				if( socket.dataAvailableForRead() ) {
 					auto data = socket.receive();
@@ -42,7 +42,7 @@ class WebSocketBroadcastService {
 				m_queues[socket] = [];
 				rawYield();
 			}
-			m_signal.unregisterSelf();
+			m_signal.release();
 			m_queues.remove(socket);
 		});
 
