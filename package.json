@@ -6,12 +6,7 @@
 		"Sönke Ludwig",
 		"Jan Krüger"
 	],
-    "version": "0.0.1",
     "dependencies": {
-    },
-	"repository": {
-		"kind": "github",
-		"owner": "rejectedsoftware",
-		"project": "vibenotes"
-	}
+    	"vibe-d": ">=0.7.13"
+    }
 }
