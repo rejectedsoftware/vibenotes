@@ -4,7 +4,7 @@ import vibe.core.core;
 import vibe.core.log;
 import vibe.http.server;
 import vibe.http.websockets;
-import vibe.core.signal;
+import vibe.core.sync;
 
 class WebSocketBroadcastService {
 	private {
