@@ -8,13 +8,13 @@ import vibe.core.signal;
 
 class WebSocketBroadcastService {
 	private {
-		Signal m_signal;
+		ManualEvent m_signal;
 		string[][WebSocket] m_queues;
 		string[WebSocket] m_channels;
 	}
 
 	this() {
-		m_signal = createSignal();
+		m_signal = createManualEvent();
 	}
 
 	void handleRequest(HttpServerRequest req, HttpServerResponse res) {
@@ -28,7 +28,7 @@ class WebSocketBroadcastService {
 			m_signal.acquire();
 			while( socket.connected ) {
 				if( socket.dataAvailableForRead() ) {
-					auto data = socket.receive();
+					auto data = socket.receiveBinary();
 					foreach( s, ref q ; m_queues ) {
 						auto pc = s in m_channels;
 						if( s !is socket && pc && *pc == channel ) q ~= cast(string)data;

@@ -21,20 +21,20 @@ class VibeNotes {
 		router.get("*", serveStaticFiles("./public/"));
 	}
 	
-	private void home(HttpServerRequest req, HttpServerResponse res)
+	private void home(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		if( auto pn = "name" in req.query )
 			res.redirect("/n/"~*pn);
 		else
-			res.renderCompat!("home.dl", HttpServerRequest, "req", string[], "channels")(Variant(req), Variant(m_broadcastService.channels));
+			res.renderCompat!("home.dl", HTTPServerRequest, "req", string[], "channels")(Variant(req), Variant(m_broadcastService.channels));
 	}
 
-	private void editor(HttpServerRequest req, HttpServerResponse res)
+	private void editor(HTTPServerRequest req, HTTPServerResponse res)
 	{
-		res.renderCompat!("editor.dl", HttpServerRequest, "req")(Variant(req));
+		res.renderCompat!("editor.dl", HTTPServerRequest, "req")(Variant(req));
 	}
 
-	private void logout(HttpServerRequest req, HttpServerResponse res)
+	private void logout(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		if (req.session) {
 			res.terminateSession();
@@ -42,7 +42,7 @@ class VibeNotes {
 		res.renderCompat!("login.dl")();
 	}
 
-	private void login(HttpServerRequest req, HttpServerResponse res)
+	private void login(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		auto session = res.startSession();
 		session["username"] = req.form["username"];
@@ -50,9 +50,9 @@ class VibeNotes {
 		res.redirect("/");
 	}
 
-	private void error(HttpServerRequest req, HttpServerResponse res, HttpServerErrorInfo error)
+	private void error(HTTPServerRequest req, HTTPServerResponse res, HTTPServerErrorInfo error)
 	{
-		res.renderCompat!("login.dl", HttpServerErrorInfo, "error")(Variant(error));
+		res.renderCompat!("login.dl", HTTPServerErrorInfo, "error")(Variant(error));
 	}
 }
 
