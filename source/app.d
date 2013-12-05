@@ -2,14 +2,14 @@ import vibe.d;
 import vibenotes.vibenotes;
 
 static this() {
-	setLogLevel(LogLevel.Info);
+	setLogLevel(LogLevel.info);
 	
-	auto router = new UrlRouter;
+	auto router = new URLRouter;
 	registerVibeNotes(router);
 	
-	auto settings = new HttpServerSettings;
+	auto settings = new HTTPServerSettings;
 	settings.sessionStore = new MemorySessionStore();
 	settings.port = 8080;
 	
-	listenHttp(settings, router);
+	listenHTTP(settings, router);
 }
