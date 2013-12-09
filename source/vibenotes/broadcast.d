@@ -17,7 +17,7 @@ class WebSocketBroadcastService {
 		m_signal = cast(LockableManualEvent)createManualEvent();
 	}
 
-	void handleRequest(HttpServerRequest req, HttpServerResponse res) {
+	void handleRequest(HTTPServerRequest req, HTTPServerResponse res) {
 		auto pv = "channel" in req.params;
 		auto channel = pv ? *pv : "default";
 

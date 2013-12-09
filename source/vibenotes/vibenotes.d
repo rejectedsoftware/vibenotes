@@ -11,7 +11,7 @@ class VibeNotes {
 		WebSocketBroadcastService m_broadcastService;
 	}
 	
-	this(UrlRouter router) {	
+	this(URLRouter router) {	
 		m_broadcastService = new WebSocketBroadcastService();
 		router.get("/", &home);
 		router.get("/login", &logout);
@@ -26,12 +26,12 @@ class VibeNotes {
 		if( auto pn = "name" in req.query )
 			res.redirect("/n/"~*pn);
 		else
-			res.renderCompat!("home.dl", HTTPServerRequest, "req", string[], "channels")(Variant(req), Variant(m_broadcastService.channels));
+			res.renderCompat!("home.dl", HTTPServerRequest, "req", string[], "channels")(req, m_broadcastService.channels);
 	}
 
 	private void editor(HTTPServerRequest req, HTTPServerResponse res)
 	{
-		res.renderCompat!("editor.dl", HTTPServerRequest, "req")(Variant(req));
+		res.renderCompat!("editor.dl", HTTPServerRequest, "req")(req);
 	}
 
 	private void logout(HTTPServerRequest req, HTTPServerResponse res)
@@ -52,11 +52,11 @@ class VibeNotes {
 
 	private void error(HTTPServerRequest req, HTTPServerResponse res, HTTPServerErrorInfo error)
 	{
-		res.renderCompat!("login.dl", HTTPServerErrorInfo, "error")(Variant(error));
+		res.renderCompat!("login.dl", HTTPServerErrorInfo, "error")(error);
 	}
 }
 
-void registerVibeNotes(UrlRouter router) 
+void registerVibeNotes(URLRouter router) 
 {
 	new VibeNotes(router);
 }
