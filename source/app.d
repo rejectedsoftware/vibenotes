@@ -1,7 +1,8 @@
 import vibe.d;
 import vibenotes.vibenotes;
 
-static this() {
+shared static this()
+{
 	setLogLevel(LogLevel.info);
 	
 	auto router = new URLRouter;
