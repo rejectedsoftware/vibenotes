@@ -1,14 +1,15 @@
 {
-    "name": "vibenotes",
+	"name": "vibenotes",
 	"description": "Embeddable real-time collaborative text editor",
 	"homepage": "https://github.com/rejectedsoftware/vibenotes",
 	"license": "AGPL-3.0",
 	"copyright": "Copyright © 2012-2013 rejectedsoftware e.K.",
-    "authors": [
+	"authors": [
 		"Sönke Ludwig",
 		"Jan Krüger"
 	],
-    "dependencies": {
-    	"vibe-d": ">=0.7.13"
-    }
+	"dependencies": {
+		"vibe-d": ">=0.7.18"
+	},
+	"versions": ["VibeDefaultMain"]
 }
