@@ -1,15 +1,15 @@
-!!! 5
+doctype 5
 html(lang="en")
 	head
 		link(rel="stylesheet", type="text/css", href="#{req.rootDir}style.css")
 		script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
 		script(type="text/javascript", src="#{req.rootDir}scripts/diff_match_patch.js")
 		script(type="text/javascript", src="#{req.rootDir}scripts/editor.js")
-		title VibeNotes
+		title VibeNotes | Channel '#{name}'
 	body(onLoad="setupEditor()")
-		h1 Editor for pad '#{req.params["name"]}':
+		h1 Editor for pad '#{name}':
 		p The contents of this edit box are synchronized among all viewers of 
-			a(href='/n/#{req.params["name"]}') this vibenotes pad
+			a(href='/n/#{name}') this vibenotes pad
 			|.
 		p You can also go back to the
 			a(href='/') main page 

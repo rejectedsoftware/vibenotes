@@ -1,62 +1,73 @@
 module vibenotes.vibenotes;
 
-import vibe.d;
-import vibenotes.broadcast;
+class VibeNotesWeb {
+	import vibe.http.server:HTTPServerResponse,HTTPServerRequest,enforceHTTP,HTTPStatus;
+	import vibe.http.websockets:handleWebSockets;
+	import vibe.web.common:contentType,path,ContentTypeAttribute,PathAttribute;
+	import vibe.web.web:SessionVar,render,redirect,terminateSession;
+	import vibenotes.broadcast:WebSocketBroadcastService;
 
-import std.functional;
-
-class VibeNotes {
-
-	private {
-		WebSocketBroadcastService m_broadcastService;
-	}
-	
-	this(URLRouter router) {	
+	this() 
+	{
 		m_broadcastService = new WebSocketBroadcastService();
-		router.get("/", &home);
-		router.get("/login", &logout);
-		router.post("/login", &login);
-		router.get("/n/:name", &editor);
-		router.get("/n/:channel/ws", &m_broadcastService.handleRequest);
-		router.get("*", serveStaticFiles("./public/"));
 	}
+
+	private WebSocketBroadcastService m_broadcastService;
+
+	private struct user {
+		string username;
+		bool loggedIn;
+	}
+
+	SessionVar!(user,"user") s_user;
+
+
+
+	@path("/")
+	void getIndex() 
+	{
+		redirect("home");
+	} 
+
+	void getHome()
+	{
+			auto channels = m_broadcastService.channels;
+			render!("home.dt",channels);
+	}
+	void postHome(string name) {
+		redirect("/n/"~name);
+	}
+
+	@path("/n/:name")
+	void getEditor(string _name)
+	{
+		auto name = _name;
+		render!("editor.dt",name);
+	} 
 	
-	private void home(HTTPServerRequest req, HTTPServerResponse res)
+	void getLogin(string error = null)
 	{
-		if( auto pn = "name" in req.query )
-			res.redirect("/n/"~*pn);
-		else
-			res.renderCompat!("home.dl", HTTPServerRequest, "req", string[], "channels")(req, m_broadcastService.channels);
+		if(s_user.loggedIn) {
+			terminateSession;
+		}
+		render!("login.dt",error);
 	}
 
-	private void editor(HTTPServerRequest req, HTTPServerResponse res)
-	{
-		res.renderCompat!("editor.dl", HTTPServerRequest, "req")(req);
+	void postLogin(string username, string password) 
+	{	
+		enforceHTTP(username.length > 0, HTTPStatus.forbidden,
+				"User name must not be empty.");
+		//enforceHTTP(checkpassword(username,password), HTTPStatus.forbidden,
+			//"Invalid password.");
+	
+		s_user.username = username;
+		s_user.loggedIn = true;
+	
+		redirect("/");
 	}
 
-	private void logout(HTTPServerRequest req, HTTPServerResponse res)
-	{
-		if (req.session) {
-			res.terminateSession();
-		} 
-		res.renderCompat!("login.dl")();
+	@path("/n/:channel/ws")
+	void getChannelWS(HTTPServerRequest req, HTTPServerResponse res, string _channel) {
+		return handleWebSockets(m_broadcastService.getChannelHandler(_channel))(req,res);
 	}
-
-	private void login(HTTPServerRequest req, HTTPServerResponse res)
-	{
-		auto session = res.startSession();
-		session["username"] = req.form["username"];
-		session["password"] = req.form["password"];
-		res.redirect("/");
-	}
-
-	private void error(HTTPServerRequest req, HTTPServerResponse res, HTTPServerErrorInfo error)
-	{
-		res.renderCompat!("login.dl", HTTPServerErrorInfo, "error")(error);
-	}
-}
-
-void registerVibeNotes(URLRouter router) 
-{
-	new VibeNotes(router);
 }
