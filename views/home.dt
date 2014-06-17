@@ -6,7 +6,7 @@ html(lang="en")
 	body
 		h1 Welome to VibeNotes!
 		p VibeNotes is a collaborative editor, enabling multiple users to modify the same document at the same time over the network. The current state is in a very early stage of development, but the core feature, the collaborative editing, is already show cased.
-		form(method="GET", action="/")
+		form(method="POST", action="/home")
 			p Create/Open Note Pad:
 			input(name="name", type="text")
 			p Available channels:

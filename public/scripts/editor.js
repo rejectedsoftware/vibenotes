@@ -258,16 +258,15 @@ function setCursorPos(cur)
 	}
 }
 
-var socket;
 
 function connect() {
-	var href = window.location.href;
-	var url = "ws" + href.substring(4) + "/ws";
-	socket = new WebSocket(url);
+	var uri = window.location.href.substring(7);
+	var ws_url = "ws://" + uri + "/ws";
+	socket = new WebSocket(ws_url);
 	socket.onopen = function() {
 		console.log("socket opened");
 	}
-	socket.onmessage = function(message) {	
+	socket.onmessage = function(message) {
 		onServerMessageReceived(message.data);
 	}
 	socket.onclose = function() {
