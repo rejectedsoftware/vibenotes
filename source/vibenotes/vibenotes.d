@@ -1,12 +1,14 @@
 module vibenotes.vibenotes;
 
-class VibeNotesWeb {
-	import vibe.http.server:HTTPServerResponse,HTTPServerRequest,enforceHTTP,HTTPStatus;
-	import vibe.http.websockets:handleWebSockets;
-	import vibe.web.common:contentType,path,ContentTypeAttribute,PathAttribute;
-	import vibe.web.web:SessionVar,render,redirect,terminateSession;
-	import vibenotes.broadcast:WebSocketBroadcastService;
+import vibenotes.broadcast : WebSocketBroadcastService;
 
+import vibe.http.server : HTTPServerResponse, HTTPServerRequest, HTTPStatus, enforceHTTP;
+import vibe.http.websockets : handleWebSockets;
+import vibe.web.common: contentType, path;
+import vibe.web.web : SessionVar, render, redirect, terminateSession;
+
+
+class VibeNotesWeb {
 	private struct LoginData {
 		string username;
 		bool loggedIn;
@@ -30,8 +32,8 @@ class VibeNotesWeb {
 
 	void getHome()
 	{
-			auto channels = m_broadcastService.channels;
-			render!("home.dt",channels);
+		auto channels = m_broadcastService.channels;
+		render!("home.dt",channels);
 	}
 
 	void postHome(string name)
@@ -57,7 +59,7 @@ class VibeNotesWeb {
 		enforceHTTP(username.length > 0, HTTPStatus.forbidden,
 				"User name must not be empty.");
 		//enforceHTTP(checkpassword(username,password), HTTPStatus.forbidden,
-			//"Invalid password.");
+			//"Invalid username or password.");
 	
 		s_loginData = LoginData(username, true);
 	
@@ -65,7 +67,8 @@ class VibeNotesWeb {
 	}
 
 	@path("/n/:channel/ws")
-	void getChannelWS(HTTPServerRequest req, HTTPServerResponse res, string _channel) {
+	void getChannelWS(HTTPServerRequest req, HTTPServerResponse res, string _channel)
+	{
 		return handleWebSockets(m_broadcastService.getChannelHandler(_channel))(req,res);
 	}
 }
