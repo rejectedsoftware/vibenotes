@@ -7,21 +7,20 @@ class VibeNotesWeb {
 	import vibe.web.web:SessionVar,render,redirect,terminateSession;
 	import vibenotes.broadcast:WebSocketBroadcastService;
 
-	this() 
-	{
-		m_broadcastService = new WebSocketBroadcastService();
-	}
-
-	private WebSocketBroadcastService m_broadcastService;
-
-	private struct user {
+	private struct LoginData {
 		string username;
 		bool loggedIn;
 	}
 
-	SessionVar!(user,"user") s_user;
+	private {
+		SessionVar!(LoginData,"user") s_loginData;
+		WebSocketBroadcastService m_broadcastService;
+	}
 
-
+	this() 
+	{
+		m_broadcastService = new WebSocketBroadcastService();
+	}
 
 	@path("/")
 	void getIndex() 
@@ -34,7 +33,9 @@ class VibeNotesWeb {
 			auto channels = m_broadcastService.channels;
 			render!("home.dt",channels);
 	}
-	void postHome(string name) {
+
+	void postHome(string name)
+	{
 		redirect("/n/"~name);
 	}
 
@@ -47,9 +48,7 @@ class VibeNotesWeb {
 	
 	void getLogin(string error = null)
 	{
-		if(s_user.loggedIn) {
-			terminateSession;
-		}
+		if (s_loginData.loggedIn) terminateSession();
 		render!("login.dt",error);
 	}
 
@@ -60,8 +59,7 @@ class VibeNotesWeb {
 		//enforceHTTP(checkpassword(username,password), HTTPStatus.forbidden,
 			//"Invalid password.");
 	
-		s_user.username = username;
-		s_user.loggedIn = true;
+		s_loginData = LoginData(username, true);
 	
 		redirect("/");
 	}
