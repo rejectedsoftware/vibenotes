@@ -1,57 +1,62 @@
 module vibenotes.broadcast;
 
+import vibe.core.concurrency : send, receiveOnly;
+import vibe.core.core: Task, rawYield, runTask;
+import vibe.core.log: logInfo;
+import vibe.core.sync: TaskCondition, TaskMutex;
+import vibe.http.websockets;
+
 
 class WebSocketBroadcastService {
-	import vibe.core.core:rawYield;
-	import vibe.core.log:logInfo;
-	import vibe.core.sync:TaskCondition,TaskMutex;
-	import vibe.http.websockets;
+	private struct SocketInfo {
+		Task tid;
+		string channel;
+	}
 
 	private {
 		TaskCondition m_signal;
-		string[][WebSocket] m_queues;
-		string[WebSocket] m_channels;
+		SocketInfo[void*] m_sockets;
 	}
 
 	this() {
 		m_signal = new TaskCondition(new TaskMutex);
 	}
 
-	auto getChannelHandler(string channel) {
-	
-		logInfo("Channel: %s", channel);
-		void callback (scope WebSocket socket) { 
-			m_queues[socket] = [];
-			m_channels[socket] = channel;
-			m_signal.mutex.lock;
-			while( socket.connected ) {
-				if (socket.dataAvailableForRead()) { // here is some fatal error with the connection stream
-					auto data = socket.receiveText();
-					foreach( s, ref q ; m_queues ) {
-						auto pc = s in m_channels;
-						if( s !is socket && pc && *pc == channel ) q ~= cast(string)data;
-					}
-					m_signal.notifyAll();
-				}
+	auto getChannelHandler(string channel)
+	{
+		void callback (scope WebSocket socket) {
+			auto sockid = cast(void*)socket;
 
-				foreach( message ; m_queues[socket] ) {
-					socket.send(cast(ubyte[])message);
+			auto sendtask = runTask({
+				while(socket.connected) {
+					auto message = receiveOnly!string();
+					socket.send(message);
 				}
-				m_queues[socket] = [];
-				rawYield();
+			});
+
+			m_sockets[sockid] = SocketInfo(sendtask, channel);
+			scope (exit) m_sockets.remove(sockid);
+
+			while (socket.waitForData()) {
+				auto data = socket.receiveText();
+				auto qs = m_sockets.dup;
+				foreach (sid, si; qs) {
+					if (!si.tid.running || sid == sockid) continue;
+					if (si.channel == channel)
+						si.tid.send(cast(string)data);
+				}
 			}
-			m_signal.mutex.unlock;
-			m_queues.remove(socket);
 		}
 
 		return &callback;
 	}
 
-	@property string[] channels() const {
+	@property string[] channels()
+	const {
 		int[string] chann;
-		foreach(WebSocket k, v; m_channels)
-			if( !(v in chann) )
-				chann[v] = 1;
+		foreach (si; m_sockets)
+			if (si.channel !in chann)
+				chann[si.channel] = 1;
 		return chann.keys;
 	}		
 }
