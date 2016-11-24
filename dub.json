@@ -9,8 +9,8 @@
 		"Jan Krüger"
 	],
 	"dependencies": {
-		"vibe-d": { 
-			"version" : "~>0.7.20"
+		"vibe-d:web": { 
+			"version" : "~>0.7.30"
 		}
 	},
 	"versions": ["VibeDefaultMain"]
